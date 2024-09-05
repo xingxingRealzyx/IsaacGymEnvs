@@ -43,29 +43,29 @@ class Humanoid(VecTask):
     def __init__(self, cfg, rl_device, sim_device, graphics_device_id, headless, virtual_screen_capture, force_render):
         self.cfg = cfg
         
-        self.randomization_params = self.cfg["task"]["randomization_params"]
-        self.randomize = self.cfg["task"]["randomize"]
-        self.dof_vel_scale = self.cfg["env"]["dofVelocityScale"]
-        self.angular_velocity_scale = self.cfg["env"].get("angularVelocityScale", 0.1)
-        self.contact_force_scale = self.cfg["env"]["contactForceScale"]
-        self.power_scale = self.cfg["env"]["powerScale"]
-        self.heading_weight = self.cfg["env"]["headingWeight"]
-        self.up_weight = self.cfg["env"]["upWeight"]
-        self.actions_cost_scale = self.cfg["env"]["actionsCost"]
-        self.energy_cost_scale = self.cfg["env"]["energyCost"]
-        self.joints_at_limit_cost_scale = self.cfg["env"]["jointsAtLimitCost"]
-        self.death_cost = self.cfg["env"]["deathCost"]
-        self.termination_height = self.cfg["env"]["terminationHeight"]
+        self.randomization_params = self.cfg["task"]["randomization_params"] # 随机数参数
+        self.randomize = self.cfg["task"]["randomize"] # 随机数开关，默认为False
+        self.dof_vel_scale = self.cfg["env"]["dofVelocityScale"] # 关节线速度标度
+        self.angular_velocity_scale = self.cfg["env"].get("angularVelocityScale", 0.1) # 关节角速度标度
+        self.contact_force_scale = self.cfg["env"]["contactForceScale"] # 接触力标度
+        self.power_scale = self.cfg["env"]["powerScale"] # 功率标度
+        self.heading_weight = self.cfg["env"]["headingWeight"] # 头朝向的权重，奖励相关
+        self.up_weight = self.cfg["env"]["upWeight"] # 站立权重， reward相关
+        self.actions_cost_scale = self.cfg["env"]["actionsCost"] # actions 花费标度，扣分相关
+        self.energy_cost_scale = self.cfg["env"]["energyCost"] # 能量花费标度，扣分相关
+        self.joints_at_limit_cost_scale = self.cfg["env"]["jointsAtLimitCost"] # 关节在极限位置标度，扣分相关
+        self.death_cost = self.cfg["env"]["deathCost"] # 死亡扣分， 扣分相关
+        self.termination_height = self.cfg["env"]["terminationHeight"] # 结束高度，扣分相关
 
-        self.debug_viz = self.cfg["env"]["enableDebugVis"]
-        self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"]
-        self.plane_dynamic_friction = self.cfg["env"]["plane"]["dynamicFriction"]
-        self.plane_restitution = self.cfg["env"]["plane"]["restitution"]
+        self.debug_viz = self.cfg["env"]["enableDebugVis"] # 使能可视化调试，默认False
+        self.plane_static_friction = self.cfg["env"]["plane"]["staticFriction"] # 地面静摩擦力
+        self.plane_dynamic_friction = self.cfg["env"]["plane"]["dynamicFriction"] # 地面动摩擦力
+        self.plane_restitution = self.cfg["env"]["plane"]["restitution"] # 地面补偿
 
-        self.max_episode_length = self.cfg["env"]["episodeLength"]
+        self.max_episode_length = self.cfg["env"]["episodeLength"] # 训练次数（指的是从生到死的过程）
 
-        self.cfg["env"]["numObservations"] = 108
-        self.cfg["env"]["numActions"] = 21
+        self.cfg["env"]["numObservations"] = 108 # 观察的参数量
+        self.cfg["env"]["numActions"] = 21 # Actions数量
 
         super().__init__(config=self.cfg, rl_device=rl_device, sim_device=sim_device, graphics_device_id=graphics_device_id, headless=headless, virtual_screen_capture=virtual_screen_capture, force_render=force_render)
 
