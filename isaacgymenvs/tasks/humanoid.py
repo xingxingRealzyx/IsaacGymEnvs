@@ -72,7 +72,7 @@ class Humanoid(VecTask):
         if self.viewer != None:
             cam_pos = gymapi.Vec3(50.0, 25.0, 2.4)
             cam_target = gymapi.Vec3(45.0, 25.0, 0.0)
-            self.gym.viewer_camera_look_at(self.viewer, None, cam_pos, cam_target)
+            self.gym.viewer_camera_look_at(self.viewer, None, cam_pos, cam_target) # 相机位置
 
         # get gym GPU state tensors
         actor_root_state = self.gym.acquire_actor_root_state_tensor(self.sim)
@@ -86,21 +86,23 @@ class Humanoid(VecTask):
         self.dof_force_tensor = gymtorch.wrap_tensor(dof_force_tensor).view(self.num_envs, self.num_dof)
 
         self.gym.refresh_dof_state_tensor(self.sim)
-        self.gym.refresh_actor_root_state_tensor(self.sim)
+        self.gym.refresh_actor_root_state_tensor(self.sim) # 更新actor姿态张量
 
-        self.root_states = gymtorch.wrap_tensor(actor_root_state)
+        self.root_states = gymtorch.wrap_tensor(actor_root_state) # shape: [actor_nums, 13]， [0:3] 位置坐标x,y,z [3:7] 姿态四元数 [7:10] 线速度 [10:13] 角速度 
         self.initial_root_states = self.root_states.clone()
-        self.initial_root_states[:, 7:13] = 0
+        self.initial_root_states[:, 7:13] = 0 # 初始化状态所有的actor线速度和角速度清零
 
         # create some wrapper tensors for different slices
-        self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
-        self.dof_pos = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 0]
-        self.dof_vel = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 1]
-        self.initial_dof_pos = torch.zeros_like(self.dof_pos, device=self.device, dtype=torch.float)
+        self.dof_state = gymtorch.wrap_tensor(dof_state_tensor) # 自由度张量，shape: [dof_nums, 2] ，dof位置（角度）和dof速度（角速度）
+        self.dof_pos = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 0] # 取到所有自由度的位置（角度）数据
+        self.dof_vel = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 1] # 取到所有自由度的速度（角速度）数据
+        self.initial_dof_pos = torch.zeros_like(self.dof_pos, device=self.device, dtype=torch.float) # 初始化位置（角度）为0
         zero_tensor = torch.tensor([0.0], device=self.device)
+        # 初始化位置（角度）限制一下上下限
         self.initial_dof_pos = torch.where(self.dof_limits_lower > zero_tensor, self.dof_limits_lower,
                                            torch.where(self.dof_limits_upper < zero_tensor, self.dof_limits_upper, self.initial_dof_pos))
-        self.initial_dof_vel = torch.zeros_like(self.dof_vel, device=self.device, dtype=torch.float)
+        
+        self.initial_dof_vel = torch.zeros_like(self.dof_vel, device=self.device, dtype=torch.float) # 初始化速度（角速度）
 
         # initialize some data used later on
         self.up_vec = to_torch(get_axis_params(1., self.up_axis_idx), device=self.device).repeat((self.num_envs, 1))
