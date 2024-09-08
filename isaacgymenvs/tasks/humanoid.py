@@ -152,15 +152,15 @@ class Humanoid(VecTask):
         asset_file = os.path.basename(asset_path)
 
         asset_options = gymapi.AssetOptions()
-        asset_options.angular_damping = 0.01
-        asset_options.max_angular_velocity = 100.0
+        asset_options.angular_damping = 0.01 # 角度阻尼
+        asset_options.max_angular_velocity = 100.0 #最大角速度
         # Note - DOF mode is set in the MJCF file and loaded by Isaac Gym
         asset_options.default_dof_drive_mode = gymapi.DOF_MODE_NONE
         humanoid_asset = self.gym.load_asset(self.sim, asset_root, asset_file, asset_options)
 
         # Note - for this asset we are loading the actuator info from the MJCF
         actuator_props = self.gym.get_asset_actuator_properties(humanoid_asset)
-        motor_efforts = [prop.motor_effort for prop in actuator_props]
+        motor_efforts = [prop.motor_effort for prop in actuator_props] # 电机功率
 
         # create force sensors at the feet
         right_foot_idx = self.gym.find_asset_rigid_body_index(humanoid_asset, "right_foot")
@@ -169,15 +169,15 @@ class Humanoid(VecTask):
         self.gym.create_asset_force_sensor(humanoid_asset, right_foot_idx, sensor_pose)
         self.gym.create_asset_force_sensor(humanoid_asset, left_foot_idx, sensor_pose)
 
-        self.max_motor_effort = max(motor_efforts)
-        self.motor_efforts = to_torch(motor_efforts, device=self.device)
+        self.max_motor_effort = max(motor_efforts) # 最大电机功率
+        self.motor_efforts = to_torch(motor_efforts, device=self.device) # 转换为torch张量
 
-        self.torso_index = 0
-        self.num_bodies = self.gym.get_asset_rigid_body_count(humanoid_asset)
-        self.num_dof = self.gym.get_asset_dof_count(humanoid_asset)
-        self.num_joints = self.gym.get_asset_joint_count(humanoid_asset)
+        self.torso_index = 0 
+        self.num_bodies = self.gym.get_asset_rigid_body_count(humanoid_asset) # 模型刚体数量
+        self.num_dof = self.gym.get_asset_dof_count(humanoid_asset) # 自由度数量
+        self.num_joints = self.gym.get_asset_joint_count(humanoid_asset) # 关节数量
 
-        start_pose = gymapi.Transform()
+        start_pose = gymapi.Transform() 
         start_pose.p = gymapi.Vec3(*get_axis_params(1.34, self.up_axis_idx))
         start_pose.r = gymapi.Quat(0.0, 0.0, 0.0, 1.0)
 
